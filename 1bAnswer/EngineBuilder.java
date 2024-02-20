@@ -25,38 +25,36 @@
 // Note: The splitting process occurs in parallel, and the goal is to minimize the total time required to build all the
 // engines using the available engineers while considering the time cost of splitting
 
-import java.util.Arrays;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 public class EngineBuilder {
 
-  public static int minTimeToBuildEngines(int[] engines, int splitCost) {
-    Arrays.sort(engines);
+  public static int minTimeBuildEngine(int engines[], int splitCost) {
+    PriorityQueue<Integer> pq = new PriorityQueue<>();
+
+    for (int i = 0; i < engines.length; i++) {
+      pq.add(engines[i]);
+    }
     int totalTime = 0;
 
-    while (engines.length > 1) {
-      int time1 = engines[0];
-      int time2 = engines[1];
+    int engine1Time = pq.remove();
+    int engine2Time = pq.remove();
 
-      int combinedTime = time1 + time2 + splitCost;
-      totalTime += combinedTime;
+    totalTime = splitCost + Math.max(engine1Time, engine2Time);
 
-      int[] newEngines = new int[engines.length - 1];
-      for (int i = 2; i < engines.length; i++) {
-        newEngines[i - 2] = engines[i];
-      }
-      engines = newEngines;
-      engines[0] = combinedTime;
-      Arrays.sort(engines);
+    for (int i = 0; i <= pq.size(); i++) {
+      int engineTime = pq.remove();
+
+      totalTime = splitCost + Math.max(totalTime, engineTime);
     }
-
-    totalTime += engines[0];
-
     return totalTime;
   }
 
   public static void main(String[] args) {
-    int[] engines = { 1, 2, 3 };
+    int engines[] = { 1, 2, 3 };
     int splitCost = 1;
-    System.out.println("Minimum time to build all engines: " + minTimeToBuildEngines(engines, splitCost));
+    int result = minTimeBuildEngine(engines, splitCost);
+    System.out.println("Minimum time required to build engines: " + result);
   }
 }
