@@ -21,35 +21,108 @@
 //After these 3 moves, the number of dresses in each sewing machine is equalized to 2. Therefore, the minimum
 //number of moves required to equalize the number of dresses is 3
 
+import java.util.ArrayList;
+import java.util.List;
+
+import java.util.*;
+
 public class ProductionLine {
+  public static void main(String[] args) {
+    ProductionLine obj = new ProductionLine();
+    int n = 5;
+    int[][] meetings = {
+        { 0, 2, 1 },
+        { 1, 3, 2 },
+        { 2, 4, 3 }
+    };
+    int firstPerson = 0;
 
-  public static int minMovesToEqualize(int[] sewingMachines) {
-    int totalDresses = 0;
-    int n = sewingMachines.length;
-
-    for (int dresses : sewingMachines) {
-      totalDresses += dresses;
-    }
-
-    if (totalDresses % n != 0) {
-      return -1;
-    }
-
-    int targetDresses = totalDresses / n;
-    int moves = 0;
-    int balance = 0;
-
-    for (int dresses : sewingMachines) {
-      balance += dresses - targetDresses;
-      moves = Math.max(moves, Math.abs(balance));
-    }
-
-    return moves;
+    List<Integer> result = obj.findAllPeople(n, meetings, firstPerson);
+    System.out.println("People who know the secret: " + result);
   }
 
-  public static void main(String[] args) {
-    int[] sewingMachines = { 2, 1, 3, 0, 2 };
-    int output = minMovesToEqualize(sewingMachines);
-    System.out.println(output);
+  public List<Integer> findAllPeople(int n, int[][] meetings, int firstPerson) {
+
+    Arrays.sort(meetings, (a, b) -> a[2] - b[2]);
+
+    Map<Integer, List<int[]>> sameTimeMeetings = new TreeMap<>();
+
+    for (int[] meeting : meetings) {
+      int x = meeting[0], y = meeting[1], t = meeting[2];
+      sameTimeMeetings.computeIfAbsent(t, k -> new ArrayList<>()).add(new int[] { x, y });
+    }
+
+    UnionFind graph = new UnionFind(n);
+    graph.unite(firstPerson, 0);
+
+    for (int t : sameTimeMeetings.keySet()) {
+
+      for (int[] meeting : sameTimeMeetings.get(t)) {
+        int x = meeting[0], y = meeting[1];
+        graph.unite(x, y);
+      }
+
+      for (int[] meeting : sameTimeMeetings.get(t)) {
+        int x = meeting[0], y = meeting[1];
+        if (!graph.connected(x, 0)) {
+
+          graph.reset(x);
+          graph.reset(y);
+        }
+      }
+    }
+
+    List<Integer> ans = new ArrayList<>();
+    for (int i = 0; i < n; ++i) {
+      if (graph.connected(i, 0)) {
+        ans.add(i);
+      }
+    }
+    return ans;
+  }
+}
+
+class UnionFind {
+  private int[] parent;
+  private int[] rank;
+
+  public UnionFind(int n) {
+    parent = new int[n];
+    rank = new int[n];
+    for (int i = 0; i < n; ++i) {
+      parent[i] = i;
+    }
+  }
+
+  public int find(int x) {
+    if (parent[x] != x) {
+      parent[x] = find(parent[x]);
+    }
+    return parent[x];
+  }
+
+  public void unite(int x, int y) {
+    int px = find(x);
+    int py = find(y);
+    if (px != py) {
+
+      if (rank[px] > rank[py]) {
+        parent[py] = px;
+      } else if (rank[px] < rank[py]) {
+        parent[px] = py;
+      } else {
+        parent[py] = px;
+        rank[px] += 1;
+      }
+    }
+  }
+
+  public boolean connected(int x, int y) {
+    return find(x) == find(y);
+  }
+
+  public void reset(int x) {
+    parent[x] = x;
+    rank[x] = 0;
   }
 }
