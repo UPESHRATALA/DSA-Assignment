@@ -13,31 +13,28 @@ import java.util.Set;
 public class GUI extends JFrame {
     private JLabel loggedInLabel;
     private JButton loginButton;
-    private JButton createAccountButton; 
-    private JTextArea textArea; 
-    private Network network; 
+    private JButton createAccountButton;
+    private JTextArea textArea;
+    private Network network;
     private JPanel postsPanel;
-    private User loggedInUser; 
+    private User loggedInUser;
     private JComboBox<String> categoryDropdown;
 
     public GUI() {
-        //this is setting up a GUI .
-        setTitle("Swatter");
+        // this is setting up a GUI .
+        setTitle("SocialMedia");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
         setLayout(new BorderLayout());
         network = new Network();
 
-      
-        JLabel headingLabel = new JLabel("Swatter", JLabel.CENTER);
+        JLabel headingLabel = new JLabel("SocialMedia", JLabel.CENTER);
         headingLabel.setFont(new Font("Arial", Font.BOLD, 20));
         add(headingLabel, BorderLayout.NORTH);
 
-     
         JPanel loginPanel = new JPanel();
         loginPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
-    
         loggedInLabel = new JLabel("", JLabel.CENTER);
         loginButton = new JButton("Login");
         loginButton.addActionListener(new ActionListener() {
@@ -65,9 +62,10 @@ public class GUI extends JFrame {
         cardPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         cardPanel.setPreferredSize(null);
 
-        //this is to create a drop down so user gets to select their interest before creating user account.
+        // this is to create a drop down so user gets to select their interest before
+        // creating user account.
         JPanel cardTopPanel = new JPanel(new BorderLayout());
-        String[] categories = {"Memes and Funs", "Politics", "Sports", "Movies", "News"};
+        String[] categories = { "Memes and Funs", "Politics", "Sports", "Movies", "News" };
         categoryDropdown = new JComboBox<>(categories);
         cardTopPanel.add(categoryDropdown, BorderLayout.NORTH);
 
@@ -81,7 +79,7 @@ public class GUI extends JFrame {
         JButton post = new JButton("Post");
         buttonPanel.add(post);
 
-        //triggered when posting
+        // triggered when posting
         post.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -97,25 +95,25 @@ public class GUI extends JFrame {
         // Adding card panel directly to main frame
         add(cardPanel, BorderLayout.CENTER);
 
-        // Panel that  holds posts
+        // Panel that holds posts
         postsPanel = new JPanel();
         postsPanel.setLayout(new BoxLayout(postsPanel, BoxLayout.Y_AXIS));
-        postsPanel.setPreferredSize(null); 
+        postsPanel.setPreferredSize(null);
         JScrollPane postsScrollPane = new JScrollPane(postsPanel);
         add(postsScrollPane, BorderLayout.SOUTH);
 
-        //loading the post from file
+        // loading the post from file
         loadPostsFromFile();
         pack();
     }
 
     private void postContent() {
-        String content = textArea.getText(); 
+        String content = textArea.getText();
         String category = (String) categoryDropdown.getSelectedItem();
 
         if (!content.isEmpty() && loggedInUser != null) {
-            loggedInUser.postContent("Category: " + category + "\n" + content); 
-            network.saveNetworkDataToFile("Network.txt"); 
+            loggedInUser.postContent("Category: " + category + "\n" + content);
+            network.saveNetworkDataToFile("Network.txt");
             refreshPosts();
             // Display a message indicating successful posting
             JOptionPane.showMessageDialog(null, "Post successfully saved!");
@@ -125,34 +123,36 @@ public class GUI extends JFrame {
         String interaction = "Posted content in category: " + category;
         loggedInUser.trackInteraction(interaction);
     }
-    //this did not work but I can explain what I am trying to achieve here later.
+
+    // this did not work but I can explain what I am trying to achieve here later.
     private void recommendContent() {
-    // Get the logged-in user
-    if (loggedInUser == null) {
-        return;
-    }
+        // Get the logged-in user
+        if (loggedInUser == null) {
+            return;
+        }
 
         // Initializing a map to store content recommendations
         Map<String, Double> contentRecommendations = new HashMap<>();
 
-        //this is the traversal
+        // this is the traversal
         for (Edge edge : network.getEdges()) {
             User sourceUser = edge.getSource();
             User destUser = edge.getDestination();
 
-            
             if (sourceUser.equals(loggedInUser)) {
                 for (String interest : destUser.getInterests()) {
                     for (String post : destUser.getPosts()) {
                         if (post.contains(interest)) {
-                            // Increasing the relevance score for the if the interest matches with other user's interest
+                            // Increasing the relevance score for the if the interest matches with other
+                            // user's interest
                             double relevanceScore = calculateRelevanceScore(interest, post);
-                            contentRecommendations.put(post, contentRecommendations.getOrDefault(post, 0.0) + relevanceScore);
+                            contentRecommendations.put(post,
+                                    contentRecommendations.getOrDefault(post, 0.0) + relevanceScore);
                         }
                     }
+                }
             }
         }
-    }
 
         // Sorting the content recommendations by relevance score
         List<Map.Entry<String, Double>> sortedRecommendations = new ArrayList<>(contentRecommendations.entrySet());
@@ -164,41 +164,41 @@ public class GUI extends JFrame {
             System.out.println("Recommendation " + (i + 1) + ": " + sortedRecommendations.get(i).getKey());
         }
     }
+
     private void commentOnPost(String username, String content) {
         // Implementing comment functionality here
         String interaction = "Commented on post by " + username + ": " + content;
         saveInteractionToFile(interaction);
         System.out.println(interaction);
     }
-    
+
     private void likePost(String username, String content) {
-        // Implementing like functionality here 
+        // Implementing like functionality here
         String interaction = "Liked post by " + username + ": " + content;
         saveInteractionToFile(interaction);
         System.out.println(interaction);
     }
-    
+
     private void saveInteractionToFile(String interaction) {
         try (FileWriter writer = new FileWriter("interactions.txt", true);
-             BufferedWriter bufferedWriter = new BufferedWriter(writer);
-             PrintWriter out = new PrintWriter(bufferedWriter)) {
+                BufferedWriter bufferedWriter = new BufferedWriter(writer);
+                PrintWriter out = new PrintWriter(bufferedWriter)) {
             out.println(interaction);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    
+
     private double calculateRelevanceScore(String interest, String post) {
         double relevanceScore = 0.0;
 
-    
         int interestFrequency = countInterestFrequency(interest, post);
         relevanceScore += interestFrequency * 0.5; // Adjust weight based on frequency
 
-        int interactionCount = countInteractions(post); 
-        relevanceScore += interactionCount * 0.3; 
+        int interactionCount = countInteractions(post);
+        relevanceScore += interactionCount * 0.3;
 
-        double userInfluence = calculateUserInteractions(post); 
+        double userInfluence = calculateUserInteractions(post);
         relevanceScore += userInfluence * 0.2;
 
         return relevanceScore;
@@ -206,9 +206,9 @@ public class GUI extends JFrame {
 
     // Counting the frequency of the interest in the post
     private int countInterestFrequency(String interest, String post) {
-        
+
         int frequency = 0;
-        String[] words = post.split("\\s+"); 
+        String[] words = post.split("\\s+");
         for (String word : words) {
             if (word.equalsIgnoreCase(interest)) {
                 frequency++;
@@ -236,7 +236,7 @@ public class GUI extends JFrame {
         return interactionCount;
     }
 
-    //to calculate total userinteractions
+    // to calculate total userinteractions
     private double calculateUserInteractions(String post) {
         int totalInteractions = countInteractions(post); // Counting interactions on the post
         int totalFollowers = getTotalFollowers(post); // Getting total followers of the user who posted the content
@@ -246,6 +246,7 @@ public class GUI extends JFrame {
 
         return userInfluence;
     }
+
     private int getTotalFollowers(String post) {
         String username = getUsernameFromPost(post);
         int totalFollowers = 0;
@@ -253,7 +254,8 @@ public class GUI extends JFrame {
         try (BufferedReader reader = new BufferedReader(new FileReader("interactions.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                // Checking if the line represents a follower interaction for the user who posted the given post
+                // Checking if the line represents a follower interaction for the user who
+                // posted the given post
                 if (line.contains(username) && line.contains("followed")) {
                     totalFollowers++;
                 }
@@ -285,7 +287,7 @@ public class GUI extends JFrame {
             String category = null;
             StringBuilder contentBuilder = new StringBuilder();
             boolean readingPosts = false;
-    
+
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("Username: ")) {
                     username = line.substring("Username: ".length());
@@ -312,11 +314,12 @@ public class GUI extends JFrame {
             e.printStackTrace();
         }
     }
+
     private void addPostToUI(String username, String category, String content) {
         JPanel postPanel = new JPanel();
         postPanel.setBorder(BorderFactory.createEtchedBorder());
         postPanel.setLayout(new BorderLayout());
-        
+
         // Adding username and category labels
         JLabel usernameLabel = new JLabel("Username: " + username);
         JLabel categoryLabel = new JLabel("Category: " + category);
@@ -324,14 +327,14 @@ public class GUI extends JFrame {
         userInfoPanel.add(usernameLabel);
         userInfoPanel.add(categoryLabel);
         postPanel.add(userInfoPanel, BorderLayout.NORTH);
-        
+
         // Adding content text area
         JTextArea contentTextArea = new JTextArea(content);
         contentTextArea.setLineWrap(true);
         contentTextArea.setWrapStyleWord(true);
         contentTextArea.setEditable(false);
         postPanel.add(new JScrollPane(contentTextArea), BorderLayout.CENTER);
-        
+
         // Adding comment and like buttons
         JButton commentButton = new JButton("Comment");
         commentButton.addActionListener(e -> commentOnPost(username, content));
@@ -341,51 +344,54 @@ public class GUI extends JFrame {
         buttonPanel.add(commentButton);
         buttonPanel.add(likeButton);
         postPanel.add(buttonPanel, BorderLayout.SOUTH);
-        
+
         // Adding post panel to the posts panel
         postsPanel.add(postPanel);
         postsPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Adding spacing between posts
         revalidate(); // Refreshing the layout
         repaint(); // Repainting the UI
     }
-    
-    //work in progress
+
+    // work in progress
 
     // private void followUser(String username) {
-    //     if (loggedInUser != null) {
-    //         // Trimming leading and trailing whitespace, to make the comparison case-insensitive
-    //         String trimmedUsername = username.trim().toLowerCase();
-    //         User userToFollow = null;
-    //         // Search for the user by iterating over the existing users
-    //         for (User user : network.getUsers()) {
-    //             if (user.getUsername().toLowerCase().equals(trimmedUsername)) {
-    //                 userToFollow = user;
-    //                 break;
-    //             }
-    //         }
-    //         if (userToFollow != null) {
-    //             loggedInUser.followUser(userToFollow, network);
-    //             // Save the updated network data with edges to the file
-    //             saveNetworkDataToFile("Network.txt");
-    //             refreshPosts();
-    //             JOptionPane.showMessageDialog(null, "You are now following " + userToFollow.getUsername());
-    //         } else {
-    //             JOptionPane.showMessageDialog(null, "User not found", "Error", JOptionPane.ERROR_MESSAGE);
-    //         }
-    //     } else {
-    //         JOptionPane.showMessageDialog(null, "Please log in to follow users", "Error", JOptionPane.ERROR_MESSAGE);
-    //     }
+    // if (loggedInUser != null) {
+    // // Trimming leading and trailing whitespace, to make the comparison
+    // case-insensitive
+    // String trimmedUsername = username.trim().toLowerCase();
+    // User userToFollow = null;
+    // // Search for the user by iterating over the existing users
+    // for (User user : network.getUsers()) {
+    // if (user.getUsername().toLowerCase().equals(trimmedUsername)) {
+    // userToFollow = user;
+    // break;
     // }
-    
+    // }
+    // if (userToFollow != null) {
+    // loggedInUser.followUser(userToFollow, network);
+    // // Save the updated network data with edges to the file
+    // saveNetworkDataToFile("Network.txt");
+    // refreshPosts();
+    // JOptionPane.showMessageDialog(null, "You are now following " +
+    // userToFollow.getUsername());
+    // } else {
+    // JOptionPane.showMessageDialog(null, "User not found", "Error",
+    // JOptionPane.ERROR_MESSAGE);
+    // }
+    // } else {
+    // JOptionPane.showMessageDialog(null, "Please log in to follow users", "Error",
+    // JOptionPane.ERROR_MESSAGE);
+    // }
+    // }
 
-    //refreshing the post once the user has posted
+    // refreshing the post once the user has posted
     private void refreshPosts() {
         for (User user : network.getUsers()) {
             for (String post : user.getPosts()) {
                 // Spliting the post into lines to extract the category
                 String[] lines = post.split("\n");
                 if (lines.length > 0 && lines[0].startsWith("Category: ")) {
-                    String category = lines[0].substring("Category: ".length()); 
+                    String category = lines[0].substring("Category: ".length());
                     StringBuilder contentBuilder = new StringBuilder();
                     for (int i = 1; i < lines.length; i++) {
                         contentBuilder.append(lines[i]);
@@ -399,7 +405,6 @@ public class GUI extends JFrame {
             }
         }
     }
-    
 
     private void openLoginWindow() {
         LoginWindow loginWindow = new LoginWindow(this);
@@ -431,7 +436,7 @@ public class GUI extends JFrame {
         public LoginWindow(GUI parent) {
             this.parent = parent;
             setTitle("Login");
-            setSize(300, 150);
+            setSize(300, 500);
             setLocationRelativeTo(parent);
             setLayout(new BorderLayout());
 
@@ -463,7 +468,7 @@ public class GUI extends JFrame {
         }
     }
 
-    //creating account GUI
+    // creating account GUI
     class CreateAccountWindow extends JFrame {
         private GUI parent;
 
@@ -483,7 +488,7 @@ public class GUI extends JFrame {
             // Adding interests checkboxes
             JPanel interestsPanel = new JPanel();
             interestsPanel.setLayout(new GridLayout(0, 1));
-            String[] interests = {"Memes and Fun", "Politics", "Sports", "News", "Music"};
+            String[] interests = { "Memes and Fun", "Politics", "Sports", "News", "Music" };
             List<JCheckBox> checkBoxes = new ArrayList<>();
             for (String interest : interests) {
                 JCheckBox checkBox = new JCheckBox(interest);
@@ -508,11 +513,12 @@ public class GUI extends JFrame {
                         // Create user with selected interests
                         User newUser = new User(username, selectedInterests);
                         network.addUser(newUser);
-                        saveNetworkDataToFile("Users.txt"); 
+                        saveNetworkDataToFile("Users.txt");
                         parent.setUserLoggedIn(newUser);
-                        dispose(); 
+                        dispose();
                     } else {
-                        JOptionPane.showMessageDialog(null, "Username cannot be empty", "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "Username cannot be empty", "Error",
+                                JOptionPane.ERROR_MESSAGE);
                     }
                 }
             });
@@ -523,7 +529,6 @@ public class GUI extends JFrame {
             add(createAccountButton, BorderLayout.SOUTH);
         }
     }
-    
 
     // Saving network data to a file
     private void saveNetworkDataToFile(String filename) {
@@ -541,7 +546,8 @@ public class GUI extends JFrame {
             // Save edges
             writer.println("Edges:");
             for (Edge edge : network.getEdges()) {
-                writer.println("Edge: " + edge.getSource().getUsername() + " -> " + edge.getDestination().getUsername());
+                writer.println(
+                        "Edge: " + edge.getSource().getUsername() + " -> " + edge.getDestination().getUsername());
             }
         } catch (IOException e) {
             e.printStackTrace();

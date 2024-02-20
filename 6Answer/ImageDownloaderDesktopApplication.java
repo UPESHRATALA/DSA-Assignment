@@ -20,9 +20,12 @@ import java.util.Date; // Import for Date class
 import java.util.concurrent.*; // Import for ExecutorService and related classes
 
 /**
- * ImageDownloaderDesktopApplication is a simple desktop application that allows users to download images from multiple URLs concurrently.
- * It utilizes Swing for the graphical user interface and employs multithreading to enhance performance during downloads.
- * The application provides features like pausing, resuming, and canceling downloads, along with displaying download progress and status messages.
+ * ImageDownloaderDesktopApplication is a simple desktop application that allows
+ * users to download images from multiple URLs concurrently.
+ * It utilizes Swing for the graphical user interface and employs multithreading
+ * to enhance performance during downloads.
+ * The application provides features like pausing, resuming, and canceling
+ * downloads, along with displaying download progress and status messages.
  */
 
 public class ImageDownloaderDesktopApplication {
@@ -61,9 +64,9 @@ public class ImageDownloaderDesktopApplication {
     // Method for initializing the GUI
     private void initialize() {
         try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel"); // Set Nimbus look and feel for modern appearance
-        } 
-        catch (Exception e) {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel"); // Set Nimbus look and feel for
+                                                                                   // modern appearance
+        } catch (Exception e) {
             e.printStackTrace(); // Print stack trace if look and feel setting fails
         }
 
@@ -88,7 +91,7 @@ public class ImageDownloaderDesktopApplication {
 
         // Loop to create URL input fields with labels and progress bars
         for (int i = 0; i < 3; i++) {
-            urlLabels[i] = new JLabel("Enter URL " + (i+1) + ":"); // Create URL label
+            urlLabels[i] = new JLabel("Enter URL " + (i + 1) + ":"); // Create URL label
             gbc.gridx = 0; // Set grid x position
             gbc.gridy = i; // Set grid y position
             inputPanel.add(urlLabels[i], gbc); // Add URL label to input panel
@@ -236,15 +239,16 @@ public class ImageDownloaderDesktopApplication {
 
                         long endTime = System.currentTimeMillis(); // Record end time
                         long elapsedTime = endTime - startTime; // Calculate elapsed time
-                        double downloadSpeed = (totalBytesRead / 1024.0) / (elapsedTime / 1000.0); // Calculate download speed
-                        publish("Download speed: " + String.format("%.2f", downloadSpeed) + " KB/s"); // Publish download speed message
+                        double downloadSpeed = (totalBytesRead / 1024.0) / (elapsedTime / 1000.0); // Calculate download
+                                                                                                   // speed
+                        publish("Download speed: " + String.format("%.2f", downloadSpeed) + " KB/s"); // Publish
+                                                                                                      // download speed
+                                                                                                      // message
                         saveImage(image); // Save image to disk
-                    } 
-                    else {
+                    } else {
                         publish("Failed to download image."); // Publish failure message
                     }
-                } 
-                catch (IOException | URISyntaxException ex) {
+                } catch (IOException | URISyntaxException ex) {
                     publish("Error: " + ex.getMessage()); // Publish error message
                 }
                 return null;
@@ -280,8 +284,7 @@ public class ImageDownloaderDesktopApplication {
 
             // Publish status message
             publish("Image saved to: " + outputPath.toString());
-        } 
-        catch (IOException e) {
+        } catch (IOException e) {
             publish("Error saving image: " + e.getMessage()); // Publish error message if saving fails
         }
     }
@@ -293,6 +296,7 @@ public class ImageDownloaderDesktopApplication {
 
     // Main method for starting the application
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(ImageDownloaderDesktopApplication::new); // Create instance of ImageDownloaderApp and run in EDT
+        SwingUtilities.invokeLater(ImageDownloaderDesktopApplication::new); // Create instance of ImageDownloaderApp and
+                                                                            // run in EDT
     }
 }
